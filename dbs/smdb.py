@@ -46,11 +46,26 @@ class smdb:
       logger.exception('create_user:{0}'.format(err))
     finally:
       self.__close()
+  def update_step(self,userid,step):
+    '''
+      更新用户点击的最远步数字
+    '''
+    sql = 'update userdata set steps = %s where userid = %s'
+    try:
+      self.__openconnection()
+      self.__opencursor()
+      cursor = self.__cursor[0]
+      cursor.execute(sql,(step,userid))
+      self.__cnx.commit()
+    except mysql.connector.Error as err:
+      logger.exception('update_step:{0}'.format(err))
+    finally:
+      self.__close()    
   def get_user_data(self,userid):
     '''
       获取用户的datas信息
     '''
-    sql = 'select datas from userdata where userid = %s'
+    sql = 'select datas,steps from userdata where userid = %s'
     try:
       self.__openconnection()
       self.__opencursor(buffered=True)

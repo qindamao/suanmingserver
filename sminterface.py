@@ -35,7 +35,7 @@ def create_user():
     if (word and name and sex and year and month and day) == '':
         return 'successCallback({0})'.format(json.dumps({'error':'bad param'}))
     datas = jiexi.lifemobile(word,year,month,day,hour,minute,sex,name)
-    rqxm = jiexi.zhouyihaoma(word)
+    rqxm = jiexi.zhouyihaoma2(word)
     datas['rqxm'] = rqxm
     userid = str(uuid.uuid1())
     sdb = smdb()
@@ -55,8 +55,10 @@ def get_user_data():
     userdata = sdb.get_user_data(userid)
     if userdata:
         userdictdata = json.loads(userdata[0])
+        dbsteps = userdata[1]
         pnum = userdictdata['pnum']
         name = userdictdata['uname']
+        data = None
         dicthead = {'userid':userid,'pnum':pnum,'uname':name}
         if step == '1':
             data = dict(**dicthead,result=userdictdata['suli'])
@@ -65,9 +67,12 @@ def get_user_data():
         elif step == '3':
             data = dict(dicthead,result=userdictdata['mima'])
         elif step == '4':
-             data = dict(dicthead,result=userdictdata['rqxm'])
+            data = dict(dicthead,result=userdictdata['rqxm'])
         else:
             return  'successCallback({0})'.format(json.dumps({'error':'bad param'}))
+        if data:
+            if dbsteps < int(step):
+                sdb.update_step(userid,step)
         return 'successCallback({0})'.format(json.dumps(data,ensure_ascii=False))
     else:
         return 'successCallback({0})'.format(json.dumps({'error':'no data'}))

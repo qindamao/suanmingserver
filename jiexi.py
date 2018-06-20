@@ -116,7 +116,10 @@ def lifemobile(pnum,year,month,day,hour,minute,sex,name,isbz = '1',datatype = '0
     lifedata['mima']['jxys'] = jxys.get_text()
     lifedata['mima']['zs'] = zs.get_text().strip()[5:]
     return lifedata
-##http://cesuan.fututa.com/zhouyihaoma/
+###
+#http://cesuan.fututa.com/zhouyihaoma/
+#通过电话号码来进行分析
+###
 def zhouyihaoma(num):
     headers = headertool.randHeader()
     headers['Host'] = 'www.fututa.com'
@@ -146,6 +149,39 @@ def zhouyihaoma(num):
     rqxm['hl'] = [b.get_text(),b.next_sibling]
     rqxm['sl'] = re.match('“\d+”.*?(\d+).*?',soup.find('p',text=re.compile('周易数理为\d')).get_text()).group(1)
     return rqxm
+###
+#http://cesuan.fututa.com/zhouyihaoma/
+#通过电话号码来进行分析，返回格式不同于zhouyihaoma
+###
+def zhouyihaoma2(num):
+    headers = headertool.randHeader()
+    headers['Host'] = 'www.fututa.com'
+    headers['Referer'] = 'Referer	http://cesuan.fututa.com/zhouyihaoma/'
+    headers['Accept-Language'] = 'zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2'
+    t = str(1529471366095 + random.randint(0,10000000))
+    url = 'http://www.fututa.com/smajax?t=haoma&hm={0}&hmt=1&jsoncallback=jsonp{1}'.format(num,t)
+    r = requests.get(url,headers = headers)
+    content = re.match('jsonp\d+\(({.*?})\)',r.text).group(1)
+    contentdic = json.loads(content)
+    comment = contentdic['comment']
+    soup = BeautifulSoup(comment,'lxml')
+    rqxm = {}
+    b = soup.find('b',text=re.compile('大象：'))
+    rqxm['dx'] = str(b) + b.next_sibling
+    b = soup.find('b',text=re.compile('总论：'))
+    rqxm['zl'] = str(b) + b.next_sibling
+    b = soup.find('b',text=re.compile('建议：'))
+    rqxm['jy'] = str(b) + b.next_sibling
+    b = soup.find('b',text=re.compile('事业：'))
+    rqxm['sy'] = str(b) + b.next_sibling
+    b = soup.find('b',text=re.compile('经商：'))
+    rqxm['js'] = str(b) + b.next_sibling
+    b = soup.find('b',text=re.compile('求名：'))
+    rqxm['qm'] = str(b) + b.next_sibling
+    b = soup.find('b',text=re.compile('婚恋：'))
+    rqxm['hl'] = str(b) + b.next_sibling
+    rqxm['sl'] = re.match('“\d+”.*?(\d+).*?',soup.find('p',text=re.compile('周易数理为\d')).get_text()).group(1)
+    return rqxm
 def sjjx_values(data):
     i = data.get_text().index('：') + 1
     return data.get_text()[i:]
@@ -154,4 +190,4 @@ if __name__  == '__main__':
     #print(xingmingjixiong('夏','阿'))
     #print(shoujijixiong('13545678765'))
     #lifemobile('13454565678','1987','4','12','21','10','1')
-    zhouyihaoma('13545678987')
+    print(zhouyihaoma2('13545678987'))
